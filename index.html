@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Local Start Page</title>
+  <link rel="stylesheet" href="app/style.css">
+</head>
+<body>
+<!-- Linkes Panel - Twitch -->
+<div id="side-panel" class="left-panel">
+  <div class="panel-header">
+    <h3>Twitch Channels</h3>
+    <button id="close-panel">✕</button>
+  </div>
+  
+  <div id="twitch-panel-content">
+    <div id="twitch-content">
+      <div class="twitch-status">
+        <div class="status-indicator online">Live</div>
+        <div class="status-indicator offline">Offline</div>
+      </div>
+      <div id="twitch-channels-container">
+        <div class="channels-list-header">
+          <h4>Twitch Kanäle</h4>
+          <button id="refresh-twitch" title="Aktualisieren">🔄</button>
+        </div>
+        <div id="twitch-channels-list"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Button zum Ein-/Ausblenden des Eingabefelds -->
+  <button id="toggle-channels-input" class="toggle-input-button">Kanaleingabe anzeigen</button>
+  
+  <!-- Eingabefeld für Kanäle (am unteren Ende des Panels) -->
+  <div id="twitch-channels-input-container">
+    <div class="input-header">
+      <div class="input-description">
+        Kanalnamen mit Semikolon trennen (z.B. twitchdev;chess;bobross)
+      </div>
+      <button id="hide-channels-input" class="hide-input-button" title="Eingabefeld ausblenden">✕</button>
+    </div>
+    <textarea id="twitch-channels-input" placeholder="Kanal1;Kanal2;Kanal3"></textarea>
+    <button id="save-channels" class="twitch-button">Kanäle speichern</button>
+    <div class="twitch-help">
+      Nach dem Speichern werden die Kanäle automatisch aktualisiert.
+    </div>
+  </div>
+</div>
+
+<!-- Button zum Anzeigen des versteckten Panels -->
+<div id="show-panel-btn" class="show-panel-button hidden">
+  <button>▶</button>
+</div>
+
+<!-- Rechtes Panel - Lesezeichen -->
+<div id="bookmarks-panel" class="right-panel">
+  <div class="panel-header">
+    <h3>Lesezeichen</h3>
+    <button id="close-bookmarks-panel">✕</button>
+  </div>
+
+  <div id="bookmarks-panel-content">
+    <!-- Lesezeichen-Seiten Navigation -->
+    <div id="bookmark-pages-nav">
+      <!-- Seiten werden hier eingefügt -->
+    </div>
+
+    <!-- Lesezeichen Liste -->
+    <div id="bookmarks-container">
+      <div class="bookmarks-list-header">
+        <h4 id="current-page-title">Lesezeichen</h4>
+        <button id="add-bookmark" title="Lesezeichen hinzufügen">➕</button>
+      </div>
+      <div id="bookmarks-list"></div>
+    </div>
+  </div>
+
+  <!-- Button zum Hinzufügen neuer Seiten -->
+  <button id="add-bookmark-page" class="bookmark-button">Neue Lesezeichenseite</button>
+</div>
+
+<!-- Button zum Anzeigen des versteckten Lesezeichen-Panels -->
+<div id="show-bookmarks-btn" class="show-panel-button show-right-panel hidden">
+  <button>◀</button>
+</div>
+
+<div class="main-content-wrapper">
+  <header>
+    <h1>Start Page</h1>
+    <div id="burger">&#9776;</div>
+    <div id="settings" class="hidden">
+      <button id="add-search">➕ New Search Bar</button>
+      <button id="add-gallery">➕ New Link Gallery</button>
+      <button id="set-bg">🖼️ Set Background</button>
+      <button id="toggle-delete-buttons">🔓 Löschbuttons einblenden</button>
+      <button id="toggle-bookmarks-panel">📑 Lesezeichen-Panel</button>
+      <hr>
+      <button id="export-btn">⬇️ Export Settings</button>
+      <button id="import-btn">⬆️ Import Settings</button>
+      <input type="file" id="import-file" accept=".json" class="hidden">
+      <input type="file" id="bg-file" accept="image/*" class="hidden">
+    </div>
+  </header>
+
+  <main>
+    <div id="rows"></div>
+    <div id="galleries"></div>
+  </main>
+</div>
+
+<!-- Modals for adding -->
+<div id="search-form" class="modal hidden">
+  <div class="modal-content">
+    <h2>New Search Bar</h2>
+    <label>Icon: <input type="file" id="search-icon" accept="image/*"></label>
+    <label>URL Template: <input type="text" id="search-url" placeholder="https://www.google.com/search?q=%s"></label>
+    <button id="save-search">Save</button>
+    <button class="cancel">Cancel</button>
+  </div>
+</div>
+
+<div id="gallery-form" class="modal hidden">
+  <div class="modal-content">
+    <h2>New Link Gallery</h2>
+    <label>Name: <input type="text" id="gallery-name" placeholder="My Links"></label>
+    <button id="save-gallery">Save</button>
+    <button class="cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Neues Modal für Lesezeichen hinzufügen -->
+<div id="bookmark-form" class="modal hidden">
+  <div class="modal-content">
+    <h2>Neues Lesezeichen</h2>
+    <label>Name: <input type="text" id="bookmark-name" placeholder="Meine Website"></label>
+    <label>URL: <input type="text" id="bookmark-url" placeholder="https://example.com"></label>
+    <button id="save-bookmark">Speichern</button>
+    <button class="cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Neues Modal für Lesezeichenseite hinzufügen -->
+<div id="bookmark-page-form" class="modal hidden">
+  <div class="modal-content">
+    <h2>Neue Lesezeichenseite</h2>
+    <label>Name: <input type="text" id="bookmark-page-name" placeholder="Arbeit"></label>
+    <button id="save-bookmark-page">Speichern</button>
+    <button class="cancel">Cancel</button>
+  </div>
+</div>
+
+<script src="app/script.js"></script>
+</body>
+</html>
