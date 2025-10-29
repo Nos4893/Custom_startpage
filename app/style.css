@@ -224,29 +224,7 @@ main {
   gap: 2rem;
 }
 
-/* Media Query für Panels */
-@media (max-width: 900px) {
-  /* Panels ausblenden bei schmalen Bildschirmen */
-  .left-panel, .right-panel {
-    transform: translateX(-100%);
-  }
-
-  .right-panel {
-    transform: translateX(100%);
-  }
-
-  /* Anzeigen, wenn die Toggle-Klasse gesetzt ist */
-  .left-panel.show-panel {
-    transform: translateX(0);
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-
-  .right-panel.show-panel {
-    transform: translateX(0);
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-}
-
+/* panel-header styles */
 .panel-header h3 {
   font-size: 1.3rem;
   color: #eee;
@@ -829,47 +807,6 @@ body.show-delete-buttons .delete-page {
   text-align: center;
   color: #ff6b6b;
   font-size: 0.9rem;
-}
-
-/* Responsive für Side Panel - ausblenden statt umstrukturieren */
-@media (max-width: 1600px) {
-  #side-panel, #bookmarks-panel {
-    display: none;
-  }
-
-  /* Wenn das Twitch-Panel explizit angezeigt werden soll */
-  #side-panel.force-show {
-    display: flex;
-    position: fixed;
-    top: 70px;
-    left: 10px;
-    z-index: 90;
-    width: 280px;
-    max-height: 80vh;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-
-  /* Wenn das Lesezeichen-Panel explizit angezeigt werden soll */
-  #bookmarks-panel.force-show {
-    display: flex;
-    position: fixed;
-    top: 70px;
-    right: 10px;
-    z-index: 90;
-    width: 280px;
-    max-height: 80vh;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
-
-  .content-wrapper {
-    flex-direction: column;
-  }
-
-  #side-panel, #bookmarks-panel {
-    width: 100%;
-    height: auto;
-    max-height: 400px;
-  }
 }
 
 /* SEARCH ROWS */

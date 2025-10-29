@@ -81,7 +81,7 @@ function renderSearches() {
     const r = document.createElement('div');
     r.className = 'row';
     r.innerHTML = `
-      <img class="icon" src="${s.icon}">
+      <img class="icon" src="${s.icon}" alt="Search icon">
       <input placeholder="Search…" data-index="${i}">
       <button class="delete-search" data-index="${i}">🗑️</button>
     `;
@@ -135,7 +135,7 @@ function renderGalleries() {
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
       thumb.innerHTML = `
-        <img src="${it.img}">
+        <img src="${it.img}" alt="Gallery item ${ii + 1}">
         <button class="menu" data-g="${gi}" data-i="${ii}">⋮</button>
       `;
 
@@ -149,8 +149,7 @@ function renderGalleries() {
         }
       });
 
-      img.addEventListener('click', (e) => {
-        // Nur für Linksklick den Standard-Link-Klick verwenden
+      img.addEventListener('click', () => {
         window.location.href = it.link || '#';
       });
 
@@ -333,11 +332,14 @@ async function renderBookmarks() {
     }
 
     bookmarkItem.innerHTML = `
-      <img class="bookmark-favicon" src="${bookmark.favicon}" alt="" 
-           onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBmaWxsPSIjODA4MDgwIiBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6Ii8+PHBhdGggZmlsbD0iIzgwODA4MCIgZD0iTTExIDdoMnYyaC0yek0xMSAxMWgydjZoLTJ6Ii8+PC9zdmc+'" />
+      <img class="bookmark-favicon" src="${bookmark.favicon}" alt="${bookmark.name} favicon">
       <span class="bookmark-name">${bookmark.name}</span>
       <button class="delete-bookmark">🗑️</button>
     `;
+    const faviconImg = bookmarkItem.querySelector('.bookmark-favicon');
+    faviconImg.addEventListener('error', () => {
+      faviconImg.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBmaWxsPSIjODA4MDgwIiBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMCAxOGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6Ii8+PHBhdGggZmlsbD0iIzgwODA4MCIgZD0iTTExIDdoMnYyaC0yek0xMSAxMWgydjZoLTJ6Ii8+PC9zdmc+';
+    });
 
     // Verbesserte Mittelklick-Behandlung
     // mousedown Event verwenden um das Scrolling zu verhindern
@@ -598,7 +600,9 @@ importFile.onchange = e => {
     try {
       const obj = JSON.parse(reader.result);
       if (!Array.isArray(obj.searches) || !Array.isArray(obj.galleries)) {
-        throw new Error('Invalid format');
+        console.warn('Invalid format during import');
+        alert('Import failed: Invalid format');
+        return;
       }
       searches   = obj.searches;
       galleries  = obj.galleries;
@@ -811,7 +815,10 @@ async function fetchTwitchChannelData() {
       twitchChannelData = channelData;
       save('twitchChannelData', twitchChannelData);
     } else {
-      throw new Error('Ungültiges Antwortformat von Twitch');
+      console.warn('Ungültiges Antwortformat von Twitch');
+      const container = document.getElementById('twitch-channels-list');
+      if (container) container.innerHTML = '<div class="error-channels">Ungültige Twitch-Antwort</div>';
+      return;
     }
   } catch (error) {
     console.error('Fehler beim Abrufen der Twitch-Daten:', error);
@@ -897,33 +904,33 @@ async function fetchChannelsIndividually() {
 function renderTwitchChannels() {
   const container = document.getElementById('twitch-channels-list');
   if (!container) return;
-  
+
   container.innerHTML = '';
-  
+
   if (!twitchChannelData.length) {
     container.innerHTML = '<div class="no-channels">Keine Kanäle gefunden oder hinzugefügt</div>';
     return;
   }
-  
+
   // Kanäle sortieren: Live zuerst nach Zuschauerzahl, dann offline alphabetisch
   const sortedChannels = [...twitchChannelData].sort((a, b) => {
     // Live-Kanäle zuerst
     if (a.isLive && !b.isLive) return -1;
     if (!a.isLive && b.isLive) return 1;
-    
+
     // Für Live-Kanäle nach Zuschauerzahl sortieren
     if (a.isLive && b.isLive) {
       return (b.stream?.viewer_count || 0) - (a.stream?.viewer_count || 0);
     }
-    
+
     // Offline-Kanäle alphabetisch sortieren
     return a.display_name.localeCompare(b.display_name);
   });
-  
+
   sortedChannels.forEach(channel => {
     const channelEl = document.createElement('div');
     channelEl.className = `twitch-channel ${channel.isLive ? 'live' : ''}`;
-    
+
     let streamInfo = '';
     if (channel.isLive && channel.stream) {
       streamInfo = `
@@ -933,15 +940,18 @@ function renderTwitchChannels() {
         </div>
       `;
     }
-    
+
     channelEl.innerHTML = `
-      <img class="channel-avatar" src="${channel.profile_image_url}" 
-           onerror="this.src='https://static-cdn.jtvnw.net/user-default-pictures-uv/75305d54-c7cc-40d1-bb9c-91fbe85943c7-profile_image-70x70.png';">
+      <img class="channel-avatar" alt="${channel.display_name}" src="${channel.profile_image_url}">
       <div class="channel-info">
         <div class="channel-name">${channel.display_name}</div>
         ${streamInfo}
       </div>
     `;
+    const avatar = channelEl.querySelector('.channel-avatar');
+    avatar.addEventListener('error', () => {
+      avatar.src = 'https://static-cdn.jtvnw.net/user-default-pictures-uv/75305d54-c7cc-40d1-bb9c-91fbe85943c7-profile_image-70x70.png';
+    });
 
     // Verbesserte Mittelklick-Unterstützung für Twitch-Kanäle
     // mousedown Event verwenden um das Scrolling zu verhindern
@@ -963,7 +973,7 @@ function renderTwitchChannels() {
         window.open(`https://twitch.tv/${channel.login}`, '_blank');
       }
     });
-    
+
     container.appendChild(channelEl);
   });
 }
@@ -986,3 +996,79 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTwitchChannels();
   }
 });
+
+// --- Responsive Panel Auto-Hide ---
+(function initAutoHidePanels() {
+  const leftPanel = document.getElementById('side-panel');
+  const rightPanel = document.getElementById('bookmarks-panel');
+  const showLeftBtn = document.getElementById('show-panel-btn');
+  const showRightBtn = document.getElementById('show-bookmarks-btn');
+
+  // Persist user override in memory (not localStorage per request simplicity)
+  let userForcedLeftVisible = false;
+  let userForcedRightVisible = false;
+  const THRESHOLD = 1700;
+
+  function applyAutoHide() {
+    const small = window.innerWidth <= THRESHOLD;
+    if (!leftPanel || !rightPanel) return;
+
+    if (small) {
+      // Auto hide if not user-forced visible
+      if (!userForcedLeftVisible && !leftPanel.classList.contains('hidden')) {
+        leftPanel.classList.add('hidden');
+        showLeftBtn.classList.remove('hidden');
+      }
+      if (!userForcedRightVisible && !rightPanel.classList.contains('hidden')) {
+        rightPanel.classList.add('hidden');
+        showRightBtn.classList.remove('hidden');
+      }
+    } else {
+      // Ensure panels visible in large view unless manually closed
+      if (leftPanel.classList.contains('hidden')) {
+        leftPanel.classList.remove('hidden');
+        showLeftBtn.classList.add('hidden');
+      }
+      if (rightPanel.classList.contains('hidden')) {
+        rightPanel.classList.remove('hidden');
+        showRightBtn.classList.add('hidden');
+      }
+      userForcedLeftVisible = false;
+      userForcedRightVisible = false;
+    }
+  }
+
+  // Hook into existing show buttons
+  if (showLeftBtn) {
+    showLeftBtn.addEventListener('click', () => {
+      leftPanel.classList.remove('hidden');
+      showLeftBtn.classList.add('hidden');
+      userForcedLeftVisible = true; // Keep visible even while small
+    });
+  }
+  if (showRightBtn) {
+    showRightBtn.addEventListener('click', () => {
+      rightPanel.classList.remove('hidden');
+      showRightBtn.classList.add('hidden');
+      userForcedRightVisible = true;
+    });
+  }
+
+  // When user closes manually, reset forced flag so auto-hide can happen again
+  if (closePanel) {
+    closePanel.addEventListener('click', () => {
+      userForcedLeftVisible = false;
+      applyAutoHide();
+    });
+  }
+  if (closeBookmarksPanel) {
+    closeBookmarksPanel.addEventListener('click', () => {
+      userForcedRightVisible = false;
+      applyAutoHide();
+    });
+  }
+
+  window.addEventListener('resize', applyAutoHide);
+  // Run once after initial visibility application
+  setTimeout(applyAutoHide, 0);
+})();
