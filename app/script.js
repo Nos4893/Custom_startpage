@@ -1012,9 +1012,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyAutoHide() {
     const small = window.innerWidth <= THRESHOLD;
     if (!leftPanel || !rightPanel) return;
-
     if (small) {
-      // Auto hide if not user-forced visible
       if (!userForcedLeftVisible && !leftPanel.classList.contains('hidden')) {
         leftPanel.classList.add('hidden');
         showLeftBtn.classList.remove('hidden');
@@ -1023,18 +1021,6 @@ document.addEventListener('DOMContentLoaded', () => {
         rightPanel.classList.add('hidden');
         showRightBtn.classList.remove('hidden');
       }
-    } else {
-      // Ensure panels visible in large view unless manually closed
-      if (leftPanel.classList.contains('hidden')) {
-        leftPanel.classList.remove('hidden');
-        showLeftBtn.classList.add('hidden');
-      }
-      if (rightPanel.classList.contains('hidden')) {
-        rightPanel.classList.remove('hidden');
-        showRightBtn.classList.add('hidden');
-      }
-      userForcedLeftVisible = false;
-      userForcedRightVisible = false;
     }
   }
 
@@ -1057,14 +1043,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // When user closes manually, reset forced flag so auto-hide can happen again
   if (closePanel) {
     closePanel.addEventListener('click', () => {
-      userForcedLeftVisible = false;
-      applyAutoHide();
+      userForcedLeftVisible = false; // allow auto-hide again on small screens
+      // No immediate autoHide call needed; panel stays closed even on large screens
     });
   }
   if (closeBookmarksPanel) {
     closeBookmarksPanel.addEventListener('click', () => {
       userForcedRightVisible = false;
-      applyAutoHide();
     });
   }
 
