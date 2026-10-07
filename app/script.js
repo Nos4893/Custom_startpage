@@ -754,48 +754,52 @@ async function fetchTwitchChannelData() {
   }
   
   try {
-    // GraphQL für alle Kanäle in einem Batch abfragen
-    const operationsDoc = `
-      query {
-        ${twitchChannels.map((channel, index) => `
-          user${index}: user(login: "${channel}") {
-            id
-            login
-            displayName
-            profileImageURL(width: 70)
-            stream {
+    const channelData = [];
+    const batchSize = 15;
+
+    for (let start = 0; start < twitchChannels.length; start += batchSize) {
+      const channelBatch = twitchChannels.slice(start, start + batchSize);
+      const operationsDoc = `
+        query {
+          ${channelBatch.map((channel, index) => `
+            user${index}: user(login: "${channel}") {
               id
-              title
-              viewersCount
-              game {
-                name
+              login
+              displayName
+              profileImageURL(width: 70)
+              stream {
+                id
+                title
+                viewersCount
+                game {
+                  name
+                }
               }
             }
-          }
-        `).join('\n')}
+          `).join('\n')}
+        }
+      `;
+
+      const response = await fetch('https://gql.twitch.tv/gql', {
+        method: 'POST',
+        headers: {
+          'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', // Public Twitch Client-ID
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: operationsDoc })
+      });
+
+      const result = await response.json();
+
+      if (!result || !result.data) {
+        console.warn('Ungültiges Antwortformat von Twitch');
+        if (container) container.innerHTML = '<div class="error-channels">Ungültige Twitch-Antwort</div>';
+        return;
       }
-    `;
-    
-    const response = await fetch('https://gql.twitch.tv/gql', {
-      method: 'POST',
-      headers: {
-        'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', // Public Twitch Client-ID
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ query: operationsDoc })
-    });
-    
-    const result = await response.json();
-    
-    // Verarbeite die Ergebnisse
-    if (result && result.data) {
-      const channelData = [];
-      
-      // Durchlaufe alle Benutzer-Ergebnisse
-      for (let i = 0; i < twitchChannels.length; i++) {
-        const userKey = `user${i}`;
-        const user = result.data[userKey];
-        
+
+      for (let i = 0; i < channelBatch.length; i++) {
+        const user = result.data[`user${i}`];
+
         if (user) {
           channelData.push({
             id: user.id,
@@ -811,15 +815,10 @@ async function fetchTwitchChannelData() {
           });
         }
       }
-      
-      twitchChannelData = channelData;
-      save('twitchChannelData', twitchChannelData);
-    } else {
-      console.warn('Ungültiges Antwortformat von Twitch');
-      const container = document.getElementById('twitch-channels-list');
-      if (container) container.innerHTML = '<div class="error-channels">Ungültige Twitch-Antwort</div>';
-      return;
     }
+
+    twitchChannelData = channelData;
+    save('twitchChannelData', twitchChannelData);
   } catch (error) {
     console.error('Fehler beim Abrufen der Twitch-Daten:', error);
     
